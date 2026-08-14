@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build-and-deploy:
@@ -11,22 +15,22 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build Expo web
-        run: npx expo export:web
         env:
           REACT_APP_REMOTE_API: 'true'
-          REACT_APP_REMOTE_API_URL: 'http://localhost:4004'
+          REACT_APP_REMOTE_API_URL: ${{ secrets.REACT_APP_REMOTE_API_URL != '' && secrets.REACT_APP_REMOTE_API_URL || 'https://your-backend-url.railway.app' }}
+        run: npx expo export:web
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
