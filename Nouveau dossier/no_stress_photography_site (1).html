@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>No Stress Photography - Votre Vision, Notre Expertise</title>
+    <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #4a4a8c 0%, #2d5aa0 20%, #1e88e5 40%, #26c6da 60%, #4db6ac 80%, #66bb6a 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, 
+                rgba(74, 74, 140, 0.9) 0%, 
+                rgba(45, 90, 160, 0.9) 20%, 
+                rgba(30, 136, 229, 0.9) 40%, 
+                rgba(38, 198, 218, 0.9) 60%, 
+                rgba(77, 182, 172, 0.9) 80%, 
+                rgba(102, 187, 106, 0.9) 100%);
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 20px;
+        }
+
+        .logo-icon {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .logo-icon svg {
+            width: 60px;
+            height: 60px;
+        }
+
+        .company-name {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+            letter-spacing: 2px;
+        }
+
+        .logo {
+            font-size: 3em;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+            display: none; /* Caché car remplacé par le nouveau logo */
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: rgba(255,255,255,0.9);
+            font-weight: 300;
+        }
+
+        .survey-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        .question {
+            margin-bottom: 30px;
+            opacity: 0;
+            animation: fadeInLeft 0.6s ease-out forwards;
+        }
+
+        .question-title {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .question-subtitle {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #26c6da;
+            box-shadow: 0 0 0 3px rgba(38, 198, 218, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .checkbox-group, .radio-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .checkbox-item, .radio-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .checkbox-item:hover, .radio-item:hover {
+            background: #e3f2fd;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .checkbox-item input, .radio-item input {
+            width: auto;
+            margin-right: 12px;
+            transform: scale(1.2);
+        }
+
+        .checkbox-item.selected, .radio-item.selected {
+            background: linear-gradient(135deg, #26c6da, #4db6ac);
+            color: white;
+            border-color: #26c6da;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #26c6da, #4db6ac);
+            color: white;
+            padding: 18px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 30px;
+            box-shadow: 0 10px 20px rgba(38, 198, 218, 0.3);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(38, 198, 218, 0.4);
+            background: linear-gradient(135deg, #1e88e5, #26c6da);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            color: white;
+            border-radius: 20px;
+            margin-top: 20px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .success-message h3 {
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #26c6da;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInLeft {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #26c6da, #4db6ac);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .survey-container {
+                padding: 20px;
+            }
+            
+            .logo-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .company-name {
+                font-size: 1.8em;
+                text-align: center;
+            }
+            
+            .logo-icon {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .logo-icon svg {
+                width: 45px;
+                height: 45px;
+            }
+            
+            .checkbox-group, .radio-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Appareil photo stylisé -->
+                        <g stroke="#000" stroke-width="3" fill="none">
+                            <!-- Corps principal de l'appareil -->
+                            <rect x="15" y="35" width="50" height="35" rx="5" fill="white" stroke="#000"/>
+                            <!-- Objectif -->
+                            <circle cx="35" cy="50" r="12" fill="white" stroke="#000"/>
+                            <circle cx="35" cy="50" r="8" fill="#26c6da" stroke="#000"/>
+                            <circle cx="35" cy="50" r="4" fill="#000"/>
+                            <!-- Reflet sur l'objectif -->
+                            <circle cx="38" cy="47" r="2" fill="white" stroke="none"/>
+                            <!-- Flash -->
+                            <rect x="55" y="40" width="6" height="4" rx="2" fill="#ff4081" stroke="#000"/>
+                            <!-- Viseur -->
+                            <rect x="45" y="30" width="8" height="5" rx="2" fill="#26c6da" stroke="#000"/>
+                            <!-- Déclencheur -->
+                            <circle cx="50" cy="32" r="2" fill="#666" stroke="#000"/>
+                            <!-- Dragonne -->
+                            <path d="M65 40 Q75 35 80 45" stroke="#000" stroke-width="2" fill="none"/>
+                        </g>
+                    </svg>
+                </div>
+                <div class="company-name">NO STRESS<br>WORLD COMPANY</div>
+            </div>
+            <div class="logo">📸 No Stress</div>
+            <div class="subtitle">Votre Vision, Notre Expertise</div>
+        </div>
+
+        <div class="survey-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <form id="photographySurvey">
+                <div class="question" style="animation-delay: 0.1s">
+                    <div class="question-title">Informations de contact</div>
+                    <div class="input-group">
+                        <input type="text" name="nom" placeholder="Votre nom complet" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="email" name="email" placeholder="Votre adresse email" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="tel" name="telephone" placeholder="Votre numéro de téléphone">
+                    </div>
+                </div>
+
+                <div class="question" style="animation-delay: 0.2s">
+                    <div class="question-title">Type de séance photo</div>
+                    <div class="question-subtitle">Quel type de séance photo souhaitez-vous ?</div>
+                    <div class="radio-group">
+                        <label class="radio-item">
+                            <input type="radio" name="typeSeance" value="portrait" required>
+                            <span>Portrait individuel</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="typeSeance" value="couple" required>
+                            <span>Séance couple</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="typeSeance" value="famille" required>
+                            <span>Photo de famille</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="typeSeance" value="mariage" required>
+                            <span>Mariage</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="typeSeance" value="evenement" required>
+                            <span>Événement</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="typeSeance" value="corporate" required>
+                            <span>Photo corporate</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="question" style="animation-delay: 0.3s">
+                    <div class="question-title">Lieu de la séance</div>
+                    <div class="question-subtitle">Où souhaitez-vous réaliser la séance ?</div>
+                    <div class="radio-group">
+                        <label class="radio-item">
+                            <input type="radio" name="lieu" value="studio" required>
+                            <span>En studio</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="lieu" value="exterieur" required>
+                            <span>En extérieur</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="lieu" value="domicile" required>
+                            <span>À domicile</span>
+                        </label>
+                        <label class="radio-item">
+                            <input type="radio" name="lieu" value="autre" required>
+                            <span>Autre lieu spécifique</span>
+                        </label>
+                    </div>
+                    <div class="input-group" style="margin-top: 15px;">
+                        <input type="text" name="lieuSpecifique" placeholder="Précisez le lieu si nécessaire">
+                    </div>
+                </div>
+
+                <div class="question" style="animation-delay: 0.4s">
+                    <div class="question-title">Style et ambiance</div>
+                    <div class="question-subtitle">Quels styles vous intéressent ? (Plusieurs choix possibles)</div>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="style" value="naturel">
+                            <span>Naturel et spontané</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="style" value="pose">
+                            <span>Posé et élégant</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="style" value="artistique">
+                            <span>Artistique et créatif</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="style" value="vintage">
+                            <span>Vintage et rétro</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="style" value="moderne">
+                            <span>Moderne et minimaliste</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="style" value="romantique">
+                            <span>Romantique et doux</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="question" style="animation-delay: 0.5s">
+                    <div class="question-title">Budget</div>
+                    <div class="question-subtitle">Quel est votre budget approximatif ?</div>
+                    <div class="input-group">
+                        <select name="budget" required>
+                            <option value="">Sélectionnez votre budget</option>
+                            <option value="moins-100000">Moins de 100 000 FCFA</option>
+                            <option value="100000-200000">100 000 - 200 000 FCFA</option>
+                            <option value="200000-300000">200 000 - 300 000 FCFA</option>
+                            <option value="300000-500000">300 000 - 500 000 FCFA</option>
+                            <option value="500000-750000">500 000 - 750 000 FCFA</option>
+                            <option value="plus-750000">Plus de 750 000 FCFA</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="question" style="animation-delay: 0.6s">
+                    <div class="question-title">Date souhaitée</div>
+                    <div class="input-group">
+                        <input type="date" name="dateSouhaitee">
+                    </div>
+                    <div class="input-group">
+                        <input type="text" name="flexibiliteDate" placeholder="Êtes-vous flexible sur les dates ? (optionnel)">
+                    </div>
+                </div>
+
+                <div class="question" style="animation-delay: 0.7s">
+                    <div class="question-title">Détails supplémentaires</div>
+                    <div class="question-subtitle">Parlez-nous de votre vision, vos attentes particulières, références...</div>
+                    <div class="input-group">
+                        <textarea name="details" placeholder="Décrivez votre projet en détail : ambiance souhaitée, nombre de personnes, références d'images que vous aimez, demandes spéciales..."></textarea>
+                    </div>
+                </div>
+
+                <div class="question" style="animation-delay: 0.8s">
+                    <div class="question-title">Retouches et livraison</div>
+                    <div class="question-subtitle">Vos préférences pour la livraison</div>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="livraison" value="galerie-en-ligne">
+                            <span>Galerie en ligne privée</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="livraison" value="usb">
+                            <span>Clé USB</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="livraison" value="tirages">
+                            <span>Tirages papier</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="livraison" value="retouches-avancees">
+                            <span>Retouches avancées</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    📸 Envoyer ma demande - NO STRESS !
+                </button>
+            </form>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Envoi de votre demande en cours...</p>
+            </div>
+
+            <div class="success-message" id="successMessage">
+                <h3>🎉 Demande envoyée avec succès !</h3>
+                <p>Merci pour votre confiance. Nous vous contacterons très prochainement pour discuter de votre projet photo.</p>
+                <p><strong>Votre référence :</strong> <span id="referenceNumber"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration EmailJS - REMPLACEZ AVEC VOS VRAIES CLÉS
+        const EMAILJS_CONFIG = {
+            publicKey: 'JsbOdljB-zSYfbcGs',
+            serviceId: 'service_dji4avl',
+            templateId: 'template_kxv3da'
+        };
+
+        // Base de données locale (simulation)
+        let surveys = JSON.parse(localStorage.getItem('photographySurveys')) || [];
+
+        // Initialisation EmailJS
+        emailjs.init(EMAILJS_CONFIG.publicKey);
+
+        // Gestionnaire de progression
+        function updateProgress() {
+            const form = document.getElementById('photographySurvey');
+            const inputs = form.querySelectorAll('input[required], select[required], textarea[required]');
+            const filled = Array.from(inputs).filter(input => {
+                if (input.type === 'radio') {
+                    return form.querySelector(`input[name="${input.name}"]:checked`);
+                }
+                return input.value.trim() !== '';
+            });
+            
+            const progress = (filled.length / inputs.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        // Animation des éléments sélectionnés
+        function handleSelection() {
+            document.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(input => {
+                input.addEventListener('change', function() {
+                    const parent = this.closest('.radio-item, .checkbox-item');
+                    if (this.type === 'radio') {
+                        // Désélectionner tous les autres radio du même groupe
+                        document.querySelectorAll(`input[name="${this.name}"]`).forEach(radio => {
+                            radio.closest('.radio-item').classList.remove('selected');
+                        });
+                    }
+                    
+                    if (this.checked) {
+                        parent.classList.add('selected');
+                    } else {
+                        parent.classList.remove('selected');
+                    }
+                    
+                    updateProgress();
+                });
+            });
+        }
+
+        // Générer un numéro de référence unique
+        function generateReference() {
+            const date = new Date();
+            const timestamp = date.getFullYear().toString().substr(-2) + 
+                            (date.getMonth() + 1).toString().padStart(2, '0') + 
+                            date.getDate().toString().padStart(2, '0');
+            const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            return 'NS' + timestamp + random;
+        }
+
+        // Collecter les données du formulaire
+        function collectFormData(form) {
+            const formData = new FormData(form);
+            const data = {};
+            
+            // Données simples
+            for (let [key, value] of formData.entries()) {
+                if (data[key]) {
+                    if (Array.isArray(data[key])) {
+                        data[key].push(value);
+                    } else {
+                        data[key] = [data[key], value];
+                    }
+                } else {
+                    data[key] = value;
+                }
+            }
+            
+            // Générer référence et timestamp
+            data.reference = generateReference();
+            data.timestamp = new Date().toISOString();
+            
+            return data;
+        }
+
+        // Sauvegarder en base de données locale
+        function saveToDatabase(data) {
+            surveys.push(data);
+            localStorage.setItem('photographySurveys', JSON.stringify(surveys));
+        }
+
+        // Formater les données pour l'email
+        function formatEmailContent(data) {
+            let content = `
+NOUVELLE DEMANDE DE SÉANCE PHOTO
+Référence: ${data.reference}
+Date de demande: ${new Date(data.timestamp).toLocaleString('fr-FR')}
+
+═══════════════════════════════════════
+
+👤 INFORMATIONS CLIENT
+Nom: ${data.nom}
+Email: ${data.email}
+Téléphone: ${data.telephone || 'Non renseigné'}
+
+📸 DÉTAILS DE LA SÉANCE
+Type: ${data.typeSeance}
+Lieu: ${data.lieu}
+${data.lieuSpecifique ? `Lieu spécifique: ${data.lieuSpecifique}` : ''}
+${data.dateSouhaitee ? `Date souhaitée: ${new Date(data.dateSouhaitee).toLocaleDateString('fr-FR')}` : ''}
+${data.flexibiliteDate ? `Flexibilité dates: ${data.flexibiliteDate}` : ''}
+
+🎨 STYLE ET PRÉFÉRENCES
+`;
+            
+            if (Array.isArray(data.style)) {
+                content += `Styles souhaités: ${data.style.join(', ')}\n`;
+            } else if (data.style) {
+                content += `Style souhaité: ${data.style}\n`;
+            }
+            
+            content += `Budget: ${data.budget}
+
+📦 LIVRAISON
+`;
+            
+            if (Array.isArray(data.livraison)) {
+                content += `Options choisies: ${data.livraison.join(', ')}\n`;
+            } else if (data.livraison) {
+                content += `Option choisie: ${data.livraison}\n`;
+            }
+            
+            if (data.details) {
+                content += `\n💭 DÉTAILS SUPPLÉMENTAIRES
+${data.details}`;
+            }
+            
+            return content;
+        }
+
+        // Envoyer l'email via EmailJS
+        async function sendEmail(data) {
+            const templateParams = {
+                to_email: 'jordyelchristo6@gmail.com', // Remplacez par votre email
+                from_name: data.nom,
+                from_email: data.email,
+                subject: `Nouvelle demande photo - ${data.reference}`,
+                message: formatEmailContent(data),
+                reference: data.reference
+            };
+
+            try {
+                const response = await emailjs.send(
+                    EMAILJS_CONFIG.serviceId,
+                    EMAILJS_CONFIG.templateId,
+                    templateParams
+                );
+                
+                console.log('Email envoyé avec succès:', response);
+                return true;
+            } catch (error) {
+                console.error('Erreur envoi email:', error);
+                throw error;
+            }
+        }
+
+        // Gestionnaire de soumission du formulaire
+        document.getElementById('photographySurvey').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+            const successMessage = document.getElementById('successMessage');
+            const form = this;
+            
+            // Désactiver le bouton et afficher le loading
+            submitBtn.disabled = true;
+            loading.style.display = 'block';
+            
+            try {
+                // Collecter les données
+                const data = collectFormData(form);
+                
+                // Sauvegarder en base de données locale
+                saveToDatabase(data);
+                
+                // Envoyer par email
+                await sendEmail(data);
+                
+                // Afficher le succès
+                form.style.display = 'none';
+                loading.style.display = 'none';
+                successMessage.style.display = 'block';
+                document.getElementById('referenceNumber').textContent = data.reference;
+                
+                // Réinitialiser après 10 secondes
+                setTimeout(() => {
+                    form.style.display = 'block';
+                    successMessage.style.display = 'none';
+                    form.reset();
+                    submitBtn.disabled = false;
+                    updateProgress();
+                    
+                    // Retirer les sélections visuelles
+                    document.querySelectorAll('.radio-item, .checkbox-item').forEach(item => {
+                        item.classList.remove('selected');
+                    });
+                }, 10000);
+                
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Une erreur s\'est produite lors de l\'envoi. Veuillez réessayer.');
+                submitBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        });
+
+        // Gestionnaire des événements de saisie pour la progression
+        document.addEventListener('input', updateProgress);
+        
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            handleSelection();
+            updateProgress();
+            
+            // Animation d'apparition des questions
+            setTimeout(() => {
+                document.querySelectorAll('.question').forEach((q, index) => {
+                    setTimeout(() => {
+                        q.style.opacity = '1';
+                    }, index * 100);
+                });
+            }, 500);
+        });
+
+        // API pour récupérer les données (pour admin)
+        window.getSurveyData = function() {
+            return surveys;
+        };
+
+        // API pour exporter les données
+        window.exportSurveyData = function() {
+            const data = surveys;
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'photography_surveys_' + new Date().toISOString().split('T')[0] + '.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+    </script>
+</body>
+</html>

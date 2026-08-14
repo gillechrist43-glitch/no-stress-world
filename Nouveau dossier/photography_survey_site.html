@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>No Stress Photography - Votre Commande</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 90%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            border-radius: 20px 20px 0 0;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            font-size: 2.5em;
+            font-weight: bold;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ecdc4, #45b7d1);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .question-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .question {
+            font-size: 1.4em;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: #333;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        input[type="text"], input[type="email"], input[type="tel"], input[type="date"], textarea, select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #4ecdc4;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .radio-group, .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .radio-option, .checkbox-option {
+            position: relative;
+            cursor: pointer;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+
+        .radio-option:hover, .checkbox-option:hover {
+            border-color: #4ecdc4;
+            background: #f0fffe;
+            transform: translateY(-2px);
+        }
+
+        .radio-option.selected, .checkbox-option.selected {
+            border-color: #4ecdc4;
+            background: linear-gradient(135deg, #4ecdc4, #45b7d1);
+            color: white;
+        }
+
+        .radio-option input[type="radio"], .checkbox-option input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            gap: 20px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-prev {
+            background: #e0e0e0;
+            color: #666;
+        }
+
+        .btn-prev:hover {
+            background: #d0d0d0;
+        }
+
+        .btn-next, .btn-submit {
+            background: linear-gradient(135deg, #4ecdc4, #45b7d1);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-next:hover, .btn-submit:hover {
+            background: linear-gradient(135deg, #45b7d1, #4ecdc4);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(69, 183, 209, 0.3);
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            gap: 10px;
+        }
+
+        .step {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            transition: all 0.3s ease;
+        }
+
+        .step.active {
+            background: #4ecdc4;
+            transform: scale(1.2);
+        }
+
+        .step.completed {
+            background: #45b7d1;
+        }
+
+        .thank-you {
+            text-align: center;
+            display: none;
+        }
+
+        .thank-you.show {
+            display: block;
+        }
+
+        .thank-you-icon {
+            font-size: 4em;
+            color: #4ecdc4;
+            margin-bottom: 20px;
+        }
+
+        .summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #4ecdc4;
+        }
+
+        .summary h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .summary-item {
+            margin-bottom: 10px;
+        }
+
+        .summary-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 20px;
+            }
+            
+            .radio-group, .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">📸 No Stress</div>
+            <div class="subtitle">Décrivez votre projet photo en toute simplicité</div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="step-indicator" id="stepIndicator">
+            <div class="step active"></div>
+            <div class="step"></div>
+            <div class="step"></div>
+            <div class="step"></div>
+            <div class="step"></div>
+            <div class="step"></div>
+        </div>
+
+        <!-- Question 1: Informations personnelles -->
+        <div class="question-section active" id="section1">
+            <div class="question">🙋‍♀️ Pour commencer, présentez-vous !</div>
+            <div class="input-group">
+                <input type="text" id="name" placeholder="Votre nom complet *" required>
+            </div>
+            <div class="input-group">
+                <input type="email" id="email" placeholder="Votre adresse email *" required>
+            </div>
+            <div class="input-group">
+                <input type="tel" id="phone" placeholder="Votre numéro de téléphone">
+            </div>
+        </div>
+
+        <!-- Question 2: Type de prestation -->
+        <div class="question-section" id="section2">
+            <div class="question">📷 Quel type de prestation souhaitez-vous ?</div>
+            <div class="radio-group">
+                <div class="radio-option" data-value="mariage">
+                    <input type="radio" name="serviceType" value="mariage">
+                    <div>💒 Mariage</div>
+                </div>
+                <div class="radio-option" data-value="portrait">
+                    <input type="radio" name="serviceType" value="portrait">
+                    <div>👤 Portrait / Séance photo</div>
+                </div>
+                <div class="radio-option" data-value="evenement">
+                    <input type="radio" name="serviceType" value="evenement">
+                    <div>🎉 Événement</div>
+                </div>
+                <div class="radio-option" data-value="corporate">
+                    <input type="radio" name="serviceType" value="corporate">
+                    <div>🏢 Photo corporate</div>
+                </div>
+                <div class="radio-option" data-value="produit">
+                    <input type="radio" name="serviceType" value="produit">
+                    <div>📦 Photo de produit</div>
+                </div>
+                <div class="radio-option" data-value="autre">
+                    <input type="radio" name="serviceType" value="autre">
+                    <div>✨ Autre</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 3: Date et lieu -->
+        <div class="question-section" id="section3">
+            <div class="question">📅 Quand et où se déroule votre projet ?</div>
+            <div class="input-group">
+                <label for="eventDate" style="display: block; margin-bottom: 5px; font-weight: 600;">Date souhaitée :</label>
+                <input type="date" id="eventDate">
+            </div>
+            <div class="input-group">
+                <input type="text" id="location" placeholder="Lieu (ville, adresse approximative)">
+            </div>
+            <div class="input-group">
+                <label for="duration" style="display: block; margin-bottom: 5px; font-weight: 600;">Durée estimée :</label>
+                <select id="duration">
+                    <option value="">Sélectionnez une durée</option>
+                    <option value="1h">1 heure</option>
+                    <option value="2h">2 heures</option>
+                    <option value="demi-journee">Demi-journée (4h)</option>
+                    <option value="journee">Journée complète (8h)</option>
+                    <option value="weekend">Week-end</option>
+                    <option value="plusieurs-jours">Plusieurs jours</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Question 4: Style et ambiance -->
+        <div class="question-section" id="section4">
+            <div class="question">🎨 Quel style et ambiance recherchez-vous ?</div>
+            <div class="checkbox-group">
+                <div class="checkbox-option" data-value="naturel">
+                    <input type="checkbox" name="style" value="naturel">
+                    <div>🌿 Naturel et spontané</div>
+                </div>
+                <div class="checkbox-option" data-value="elegant">
+                    <input type="checkbox" name="style" value="elegant">
+                    <div>✨ Élégant et sophistiqué</div>
+                </div>
+                <div class="checkbox-option" data-value="vintage">
+                    <input type="checkbox" name="style" value="vintage">
+                    <div>📸 Vintage et rétro</div>
+                </div>
+                <div class="checkbox-option" data-value="moderne">
+                    <input type="checkbox" name="style" value="moderne">
+                    <div>🔥 Moderne et dynamique</div>
+                </div>
+                <div class="checkbox-option" data-value="artistique">
+                    <input type="checkbox" name="style" value="artistique">
+                    <div>🎭 Artistique et créatif</div>
+                </div>
+                <div class="checkbox-option" data-value="classique">
+                    <input type="checkbox" name="style" value="classique">
+                    <div>🏛️ Classique et intemporel</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question 5: Besoins spécifiques -->
+        <div class="question-section" id="section5">
+            <div class="question">🎯 Avez-vous des besoins spécifiques ?</div>
+            <div class="checkbox-group">
+                <div class="checkbox-option" data-value="retouche">
+                    <input type="checkbox" name="needs" value="retouche">
+                    <div>✏️ Retouche et post-traitement</div>
+                </div>
+                <div class="checkbox-option" data-value="impression">
+                    <input type="checkbox" name="needs" value="impression">
+                    <div>🖨️ Impression des photos</div>
+                </div>
+                <div class="checkbox-option" data-value="album">
+                    <input type="checkbox" name="needs" value="album">
+                    <div>📚 Création d'un album</div>
+                </div>
+                <div class="checkbox-option" data-value="livraison-express">
+                    <input type="checkbox" name="needs" value="livraison-express">
+                    <div>⚡ Livraison express</div>
+                </div>
+                <div class="checkbox-option" data-value="usage-commercial">
+                    <input type="checkbox" name="needs" value="usage-commercial">
+                    <div>💼 Usage commercial</div>
+                </div>
+                <div class="checkbox-option" data-value="drone">
+                    <input type="checkbox" name="needs" value="drone">
+                    <div>🚁 Photos par drone</div>
+                </div>
+            </div>
+            <div class="input-group">
+                <label for="budget" style="display: block; margin-bottom: 5px; font-weight: 600;">Budget approximatif :</label>
+                <select id="budget">
+                    <option value="">Sélectionnez votre budget</option>
+                    <option value="moins-500">Moins de 500€</option>
+                    <option value="500-1000">500€ - 1000€</option>
+                    <option value="1000-2000">1000€ - 2000€</option>
+                    <option value="2000-5000">2000€ - 5000€</option>
+                    <option value="plus-5000">Plus de 5000€</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Question 6: Détails et commentaires -->
+        <div class="question-section" id="section6">
+            <div class="question">💭 Parlez-nous de votre vision !</div>
+            <div class="input-group">
+                <textarea id="vision" placeholder="Décrivez votre projet, vos attentes, l'ambiance souhaitée, des références que vous aimez..."></textarea>
+            </div>
+            <div class="input-group">
+                <textarea id="comments" placeholder="Commentaires additionnels, contraintes particulières, demandes spéciales..."></textarea>
+            </div>
+        </div>
+
+        <!-- Page de remerciement -->
+        <div class="thank-you" id="thankYou">
+            <div class="thank-you-icon">🎉</div>
+            <h2>Merci pour votre confiance !</h2>
+            <p>Votre demande a été envoyée avec succès. Nous vous contacterons dans les plus brefs délais pour discuter de votre projet.</p>
+            
+            <div class="summary" id="orderSummary">
+                <h3>📋 Récapitulatif de votre commande</h3>
+                <div id="summaryContent"></div>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button class="btn btn-prev" id="prevBtn" onclick="prevQuestion()" style="display: none;">Précédent</button>
+            <button class="btn btn-next" id="nextBtn" onclick="nextQuestion()">Suivant</button>
+            <button class="btn btn-submit" id="submitBtn" onclick="submitForm()" style="display: none;">Envoyer ma demande</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSection = 1;
+        const totalSections = 6;
+        const formData = {};
+
+        // Gestion des options radio et checkbox
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gestion des radio buttons
+            document.querySelectorAll('.radio-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const radioGroup = this.closest('.radio-group');
+                    radioGroup.querySelectorAll('.radio-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    this.classList.add('selected');
+                    this.querySelector('input[type="radio"]').checked = true;
+                });
+            });
+
+            // Gestion des checkboxes
+            document.querySelectorAll('.checkbox-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const checkbox = this.querySelector('input[type="checkbox"]');
+                    checkbox.checked = !checkbox.checked;
+                    this.classList.toggle('selected', checkbox.checked);
+                });
+            });
+
+            updateProgress();
+            updateStepIndicator();
+        });
+
+        function nextQuestion() {
+            if (validateCurrentSection()) {
+                saveCurrentData();
+                if (currentSection < totalSections) {
+                    currentSection++;
+                    showSection(currentSection);
+                }
+            }
+        }
+
+        function prevQuestion() {
+            if (currentSection > 1) {
+                currentSection--;
+                showSection(currentSection);
+            }
+        }
+
+        function showSection(section) {
+            document.querySelectorAll('.question-section').forEach(s => {
+                s.classList.remove('active');
+            });
+            document.getElementById(`section${section}`).classList.add('active');
+
+            document.getElementById('prevBtn').style.display = section > 1 ? 'block' : 'none';
+            document.getElementById('nextBtn').style.display = section < totalSections ? 'block' : 'none';
+            document.getElementById('submitBtn').style.display = section === totalSections ? 'block' : 'none';
+
+            updateProgress();
+            updateStepIndicator();
+        }
+
+        function updateProgress() {
+            const progress = (currentSection / totalSections) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        function updateStepIndicator() {
+            const steps = document.querySelectorAll('.step');
+            steps.forEach((step, index) => {
+                step.classList.remove('active', 'completed');
+                if (index + 1 < currentSection) {
+                    step.classList.add('completed');
+                } else if (index + 1 === currentSection) {
+                    step.classList.add('active');
+                }
+            });
+        }
+
+        function validateCurrentSection() {
+            const section = document.getElementById(`section${currentSection}`);
+            const requiredInputs = section.querySelectorAll('input[required]');
+            
+            for (let input of requiredInputs) {
+                if (!input.value.trim()) {
+                    input.focus();
+                    input.style.borderColor = '#ff6b6b';
+                    setTimeout(() => {
+                        input.style.borderColor = '#e0e0e0';
+                    }, 3000);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function saveCurrentData() {
+            const section = document.getElementById(`section${currentSection}`);
+            
+            // Sauvegarder les inputs text, email, tel, date, textarea, select
+            section.querySelectorAll('input, textarea, select').forEach(input => {
+                if (input.type !== 'radio' && input.type !== 'checkbox') {
+                    formData[input.id] = input.value;
+                }
+            });
+
+            // Sauvegarder les radio buttons
+            section.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
+                formData[radio.name] = radio.value;
+            });
+
+            // Sauvegarder les checkboxes
+            const checkboxGroups = {};
+            section.querySelectorAll('input[type="checkbox"]:checked').forEach(checkbox => {
+                if (!checkboxGroups[checkbox.name]) {
+                    checkboxGroups[checkbox.name] = [];
+                }
+                checkboxGroups[checkbox.name].push(checkbox.value);
+            });
+            Object.assign(formData, checkboxGroups);
+        }
+
+        async function submitForm() {
+            saveCurrentData();
+            
+            try {
+                // Afficher un indicateur de chargement
+                document.getElementById('submitBtn').innerHTML = '⏳ Envoi en cours...';
+                document.getElementById('submitBtn').disabled = true;
+                
+                // Envoyer les données au backend
+                const response = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Stocker l'ID de commande pour le récapitulatif
+                    formData.orderId = result.orderId;
+                    
+                    // Générer le récapitulatif
+                    generateSummary();
+                    
+                    // Afficher la page de remerciement
+                    document.querySelectorAll('.question-section').forEach(s => {
+                        s.classList.remove('active');
+                    });
+                    document.getElementById('thankYou').classList.add('show');
+                    document.querySelector('.buttons').style.display = 'none';
+                    document.querySelector('.progress-bar').style.display = 'none';
+                    document.querySelector('.step-indicator').style.display = 'none';
+                    
+                    console.log('✅ Commande envoyée avec succès:', result);
+                } else {
+                    throw new Error(result.message || 'Erreur lors de l\'envoi');
+                }
+                
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                alert('Une erreur est survenue lors de l\'envoi de votre demande. Veuillez réessayer.');
+                
+                // Réactiver le bouton
+                document.getElementById('submitBtn').innerHTML = 'Envoyer ma demande';
+                document.getElementById('submitBtn').disabled = false;
+            }
+        }
+
+        function generateSummary() {
+            const summaryContent = document.getElementById('summaryContent');
+            let html = '';
+
+            // Afficher l'ID de commande si disponible
+            if (formData.orderId) {
+                html += `
+                    <div class="summary-item" style="background: #4ecdc4; color: white; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                        <span class="summary-label">📋 Numéro de commande :</span> #${formData.orderId}
+                    </div>
+                `;
+            }
+
+            const labels = {
+                name: '👤 Nom',
+                email: '📧 Email',
+                phone: '📞 Téléphone',
+                serviceType: '📷 Type de prestation',
+                eventDate: '📅 Date',
+                location: '📍 Lieu',
+                duration: '⏱️ Durée',
+                style: '🎨 Style recherché',
+                needs: '🎯 Besoins spécifiques',
+                budget: '💰 Budget',
+                vision: '💭 Vision du projet',
+                comments: '💬 Commentaires'
+            };
+
+            for (const [key, value] of Object.entries(formData)) {
+                if (value && labels[key] && key !== 'orderId') {
+                    html += `
+                        <div class="summary-item">
+                            <span class="summary-label">${labels[key]} :</span> 
+                            ${Array.isArray(value) ? value.join(', ') : value}
+                        </div>
+                    `;
+                }
+            }
+
+            summaryContent.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
