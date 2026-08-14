@@ -13,6 +13,11 @@
       "enabled": false,
       "fallbackToCacheTimeout": 30000
     },
-    "assetBundlePatterns": ["**/*"]
+    "assetBundlePatterns": ["**/*"],
+    "web": {
+      "build": {
+        "basePath": "/no-stress-world/"
+      }
+    }
   }
 }
