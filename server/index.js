@@ -6,6 +6,8 @@ const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
 const crypto = require('crypto');
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
+const DEFAULT_ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@local';
+const DEFAULT_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
 function base64url(input) {
   return Buffer.from(input).toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
@@ -29,10 +31,16 @@ function verifyToken(token) {
   }
 }
 
-const DB_PATH = path.join(__dirname, 'db.sqlite');
+const DB_PATH = process.env.NETLIFY ? '/tmp/no-stress-world.sqlite' : path.join(__dirname, 'db.sqlite');
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+
+try {
+  fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
+} catch (e) {
+  console.warn('Could not ensure DB directory exists:', e && e.message ? e.message : e);
+}
 
 const db = new sqlite3.Database(DB_PATH);
 
@@ -117,16 +125,16 @@ function verifyPassword(password, stored) {
 }
 
 function seedAdmin() {
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@local';
-  const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
-  db.get('SELECT * FROM users WHERE role = ?', ['admin'], async (err, row) => {
+  db.get('SELECT * FROM users WHERE email = ?', [DEFAULT_ADMIN_EMAIL], async (err, row) => {
     if (err) return console.error('Admin seed check failed', err.message);
     if (!row) {
-      const hash = hashPassword(adminPassword);
-      db.run('INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)', ['Admin', adminEmail, hash, 'admin'], function (e) {
+      const hash = hashPassword(DEFAULT_ADMIN_PASSWORD);
+      db.run('INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)', ['Admin', DEFAULT_ADMIN_EMAIL, hash, 'admin'], function (e) {
         if (e) return console.error('Failed to seed admin', e.message);
-        console.log(`Seeded initial admin -> email: ${adminEmail} / password: ${adminPassword}`);
+        console.log(`Seeded initial admin -> email: ${DEFAULT_ADMIN_EMAIL} / password: ${DEFAULT_ADMIN_PASSWORD}`);
       });
+    } else {
+      console.log(`Admin user exists -> email: ${DEFAULT_ADMIN_EMAIL}`);
     }
   });
 }
@@ -156,14 +164,32 @@ app.post('/auth/register', async (req, res) => {
 app.post('/auth/login', (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Missing email or password' });
-  db.get('SELECT * FROM users WHERE email = ?', [email], (err, row) => {
-    if (err) return res.status(500).json({ error: err.message });
+
+  const loginWithUser = (row) => {
     if (!row) return res.status(401).json({ error: 'Invalid credentials' });
     const match = verifyPassword(password, row.password);
     if (!match) return res.status(401).json({ error: 'Invalid credentials' });
     const user = { id: 'u' + row.id, name: row.name, email: row.email, role: row.role };
     const token = signToken({ id: row.id, role: row.role, name: row.name, email: row.email, iat: Date.now() });
     res.json({ user, token });
+  };
+
+  db.get('SELECT * FROM users WHERE email = ?', [email], (err, row) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (row) return loginWithUser(row);
+
+    if (email === DEFAULT_ADMIN_EMAIL && password === DEFAULT_ADMIN_PASSWORD) {
+      const hash = hashPassword(DEFAULT_ADMIN_PASSWORD);
+      return db.run('INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)', ['Admin', DEFAULT_ADMIN_EMAIL, hash, 'admin'], function (insertErr) {
+        if (insertErr) return res.status(500).json({ error: insertErr.message });
+        db.get('SELECT * FROM users WHERE email = ?', [DEFAULT_ADMIN_EMAIL], (findErr, createdRow) => {
+          if (findErr) return res.status(500).json({ error: findErr.message });
+          return loginWithUser(createdRow);
+        });
+      });
+    }
+
+    return loginWithUser(null);
   });
 });
 
@@ -385,6 +411,11 @@ app.get('/dashboard', (req, res) => {
 });
 
 const PORT = process.env.PORT || 4004;
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
-});
+
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server listening on port ${PORT}`);
+  });
+}
+
+module.exports = app;

@@ -62,12 +62,14 @@ import { getItem, setItem } from './db';
 const DEFAULT_BASE = 'http://localhost:4004';
 // Determine whether to use remote API:
 // - explicit env var REACT_APP_REMOTE_API=true|1
-// - or running in the browser on localhost
+// - or running in a deployed web app (Netlify/Vercel/etc.)
 const IS_REMOTE =
   (typeof process !== 'undefined' && (process.env.REACT_APP_REMOTE_API === 'true' || process.env.REACT_APP_REMOTE_API === '1')) ||
-  (typeof window !== 'undefined' && window.location && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'));
+  (typeof window !== 'undefined' && window.location && !(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'));
 
-const BASE_URL = (typeof process !== 'undefined' && process.env.REACT_APP_REMOTE_API_URL) || DEFAULT_BASE;
+const BASE_URL =
+  (typeof process !== 'undefined' && process.env.REACT_APP_REMOTE_API_URL) ||
+  (typeof window !== 'undefined' && window.location && window.location.origin ? `${window.location.origin}/api` : DEFAULT_BASE);
 
 const TOKEN_KEY = '@app:token';
 
