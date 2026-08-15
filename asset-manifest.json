@@ -1,0 +1,36 @@
+{
+  "files": {
+    "main.js": "/static/js/main.edea3ed6.js",
+    "static/js/87.0931ddd7.chunk.js": "/static/js/87.0931ddd7.chunk.js",
+    "static/js/652.c053f2b6.js": "/static/js/652.c053f2b6.js",
+    "static/media/Inter_900Black_Italic.ttf": "/static/media/Inter_900Black_Italic.298558d37b3e365d146d.ttf",
+    "static/media/Inter_800ExtraBold_Italic.ttf": "/static/media/Inter_800ExtraBold_Italic.c05a2136f8ee71175063.ttf",
+    "static/media/Inter_700Bold_Italic.ttf": "/static/media/Inter_700Bold_Italic.4c6c2f116943f0b7b843.ttf",
+    "static/media/Inter_600SemiBold_Italic.ttf": "/static/media/Inter_600SemiBold_Italic.3898ea59c18f2ce4e8d5.ttf",
+    "static/media/Inter_200ExtraLight_Italic.ttf": "/static/media/Inter_200ExtraLight_Italic.de072c4122efd84aa95c.ttf",
+    "static/media/Inter_300Light_Italic.ttf": "/static/media/Inter_300Light_Italic.310f665ecea321d5e599.ttf",
+    "static/media/Inter_100Thin_Italic.ttf": "/static/media/Inter_100Thin_Italic.ae40844f5af44698f3ba.ttf",
+    "static/media/Inter_500Medium_Italic.ttf": "/static/media/Inter_500Medium_Italic.a1db621a2455dce1f3a5.ttf",
+    "static/media/Inter_400Regular_Italic.ttf": "/static/media/Inter_400Regular_Italic.f234b7e239cc2689c396.ttf",
+    "static/media/Inter_800ExtraBold.ttf": "/static/media/Inter_800ExtraBold.a36b2bc2959474ee972e.ttf",
+    "static/media/Inter_900Black.ttf": "/static/media/Inter_900Black.fc79356915aff1b78fe7.ttf",
+    "static/media/Inter_700Bold.ttf": "/static/media/Inter_700Bold.271718257a1b01214cec.ttf",
+    "static/media/Inter_600SemiBold.ttf": "/static/media/Inter_600SemiBold.ee80270dcaaea57e94da.ttf",
+    "static/media/Inter_300Light.ttf": "/static/media/Inter_300Light.0dbfcb8262ba8ddb33a0.ttf",
+    "static/media/Inter_200ExtraLight.ttf": "/static/media/Inter_200ExtraLight.be9280b3a2db360e056a.ttf",
+    "static/media/Inter_500Medium.ttf": "/static/media/Inter_500Medium.745b495b2b81019ce25c.ttf",
+    "static/media/Inter_100Thin.ttf": "/static/media/Inter_100Thin.c7eda4ead7fe0ab1be94.ttf",
+    "static/media/Inter_400Regular.ttf": "/static/media/Inter_400Regular.f30da197c593742ec435.ttf",
+    "static/media/Ionicons.ttf": "/static/media/Ionicons.3517aeaa34b2f8cd8eef.ttf",
+    "index.html": "/index.html",
+    "manifest.json": "/manifest.json",
+    "serve.json": "/serve.json",
+    "main.edea3ed6.js.map": "/static/js/main.edea3ed6.js.map",
+    "87.0931ddd7.chunk.js.map": "/static/js/87.0931ddd7.chunk.js.map",
+    "652.c053f2b6.js.map": "/static/js/652.c053f2b6.js.map"
+  },
+  "entrypoints": [
+    "static/js/652.c053f2b6.js",
+    "static/js/main.edea3ed6.js"
+  ]
+}
