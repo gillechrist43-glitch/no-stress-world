@@ -32,7 +32,7 @@ export const RegisterScreen: React.FC = ({ navigation }: any) => {
     setError('');
     setLoading(true);
     try {
-      const u = await register(name, email, password);
+      await register(name, email, password, 'client');
       navigation.replace('Client');
     } catch (err: any) {
       setError(err?.message || 'Erreur lors de l\'inscription. Vérifiez vos informations.');

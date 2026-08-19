@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Platform, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Platform, Alert, useWindowDimensions } from 'react-native';
 import { Input } from '../../components/ui/Input';
 import { api, Booking } from '../../services/api';
 import { colors } from '../../theme';
@@ -17,6 +17,9 @@ export const AdminDashboard: React.FC = ({ navigation }: any) => {
   const [newAdminEmail, setNewAdminEmail] = React.useState('');
   const [newAdminPassword, setNewAdminPassword] = React.useState('');
   const [creatingAdmin, setCreatingAdmin] = React.useState(false);
+  const { width } = useWindowDimensions();
+  const contentWidth = Math.min(width - 32, 1180);
+  const compactGrid = width < 720;
 
   useEffect(() => {
     (async () => {
@@ -54,11 +57,12 @@ export const AdminDashboard: React.FC = ({ navigation }: any) => {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       {/* Professional Header */}
-      <View style={{ backgroundColor: colors.surface, paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: colors.border }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+      <View style={{ backgroundColor: colors.surface, paddingHorizontal: 20, paddingVertical: 18, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+        <View style={{ width: contentWidth, alignSelf: 'center', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <View>
-            <Text style={{ color: colors.text, fontSize: 20, fontWeight: '700' }}>📊 Dashboard</Text>
-            <Text style={{ color: colors.muted, fontSize: 12, marginTop: 4 }}>{user?.email}</Text>
+            <Text style={{ color: colors.accent, fontSize: 11, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase' }}>Espace administration</Text>
+            <Text style={{ color: colors.text, fontSize: 26, fontWeight: '700', marginTop: 4 }}>Dashboard</Text>
+            <Text style={{ color: colors.muted, fontSize: 13, marginTop: 5 }}>{user?.email}</Text>
           </View>
           <TouchableOpacity onPress={onLogout} style={{ backgroundColor: colors.accent, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8 }}>
             <Text style={{ color: colors.text, fontWeight: '600', fontSize: 13 }}>Déconnecter</Text>
@@ -66,28 +70,29 @@ export const AdminDashboard: React.FC = ({ navigation }: any) => {
         </View>
       </View>
 
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 28, paddingBottom: 48 }}>
+        <View style={{ width: contentWidth, alignSelf: 'center' }}>
         {/* Stats Overview */}
-        <Text style={{ color: colors.text, fontSize: 16, fontWeight: '600', marginBottom: 12 }}>Vue d'ensemble</Text>
-        <View style={{ flexDirection: 'row', marginBottom: 16, justifyContent: 'space-between' }}>
+        <Text style={{ color: colors.text, fontSize: 13, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 12 }}>Vue d'ensemble</Text>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 20, marginHorizontal: -5 }}>
           {[
-            { label: 'Total', value: stats.totalBookings, icon: '📅' },
-            { label: 'Confirmées', value: stats.confirmed, icon: '✅' },
-            { label: 'En attente', value: stats.pending, icon: '⏳' },
-            { label: 'Terminées', value: stats.completed, icon: '🎉' }
+            { label: 'Total', value: stats.totalBookings },
+            { label: 'Confirmées', value: stats.confirmed },
+            { label: 'En attente', value: stats.pending },
+            { label: 'Terminées', value: stats.completed }
           ].map((item) => (
-            <Card key={item.label} style={{ flex: 1, marginRight: item.label !== 'Terminées' ? 8 : 0, padding: 12 }}>
-              <Text style={{ color: colors.muted, fontSize: 11 }}>{item.label}</Text>
-              <Text style={{ color: colors.text, fontSize: 24, fontWeight: '700', marginTop: 8 }}>
-                {item.icon} {item.value}
-              </Text>
+            <Card key={item.label} style={{ width: compactGrid ? '50%' : '25%', padding: 16, borderRadius: 10, shadowOpacity: 0.04 }}>
+              <View style={{ borderLeftWidth: 3, borderLeftColor: colors.accent, paddingLeft: 10 }}>
+                <Text style={{ color: colors.muted, fontSize: 11, fontWeight: '600' }}>{item.label}</Text>
+                <Text style={{ color: colors.text, fontSize: 28, fontWeight: '700', marginTop: 8 }}>{item.value}</Text>
+              </View>
             </Card>
           ))}
         </View>
 
         {/* Revenue Card */}
         <Card style={{ padding: 16, marginBottom: 18 }}>
-          <Text style={{ color: colors.muted, fontSize: 12 }}>💰 Revenu total</Text>
+          <Text style={{ color: colors.muted, fontSize: 12, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.6 }}>Revenu total</Text>
           <Text style={{ color: colors.accent, fontSize: 32, fontWeight: '700', marginTop: 8 }}>€{stats.revenue}</Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 12 }}>
             {Object.entries(stats.packageRevenue).map(([packageName, amount]) => (
@@ -100,18 +105,30 @@ export const AdminDashboard: React.FC = ({ navigation }: any) => {
         </Card>
 
         {/* Quick Actions */}
-        <Text style={{ color: colors.text, fontSize: 16, fontWeight: '600', marginBottom: 12 }}>Actions rapides</Text>
-        <View style={{ flexDirection: 'row', marginBottom: 16, justifyContent: 'space-between' }}>
-          <TouchableOpacity onPress={() => navigation.navigate('AdminOrders')} style={{ flex: 1, marginRight: 8 }}>
-            <Card style={{ padding: 14, alignItems: 'center' }}>
-              <Text style={{ fontSize: 24, marginBottom: 6 }}>📋</Text>
-              <Text style={{ color: colors.text, fontWeight: '600', fontSize: 12, textAlign: 'center' }}>Réservations</Text>
+        <Text style={{ color: colors.text, fontSize: 13, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 12 }}>Actions rapides</Text>
+        <View style={{ flexDirection: compactGrid ? 'column' : 'row', marginBottom: 20 }}>
+          <TouchableOpacity onPress={() => navigation.navigate('AdminOrders')} style={{ flex: 1, marginRight: compactGrid ? 0 : 8, marginBottom: compactGrid ? 8 : 0 }}>
+            <Card style={{ padding: 16, borderRadius: 10 }}>
+              <Text style={{ color: colors.accent, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' }}>Gestion</Text>
+              <Text style={{ color: colors.text, fontWeight: '700', fontSize: 16, marginTop: 8 }}>Réservations</Text>
             </Card>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('GalleryManagement')} style={{ flex: 1, marginRight: 8 }}>
-            <Card style={{ padding: 14, alignItems: 'center' }}>
-              <Text style={{ fontSize: 24, marginBottom: 6 }}>🎨</Text>
-              <Text style={{ color: colors.text, fontWeight: '600', fontSize: 12, textAlign: 'center' }}>Galerie</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('GalleryManagement')} style={{ flex: 1, marginRight: compactGrid ? 0 : 8, marginBottom: compactGrid ? 8 : 0 }}>
+            <Card style={{ padding: 16, borderRadius: 10 }}>
+              <Text style={{ color: colors.accent, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' }}>Contenu</Text>
+              <Text style={{ color: colors.text, fontWeight: '700', fontSize: 16, marginTop: 8 }}>Galerie</Text>
+            </Card>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('AdminMessages')} style={{ flex: 1, marginRight: compactGrid ? 0 : 8, marginBottom: compactGrid ? 8 : 0 }}>
+            <Card style={{ padding: 16, borderRadius: 10 }}>
+              <Text style={{ color: colors.accent, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' }}>Relation client</Text>
+              <Text style={{ color: colors.text, fontWeight: '700', fontSize: 16, marginTop: 8 }}>Messages</Text>
+            </Card>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('AdminProfile')} style={{ flex: 1, marginRight: compactGrid ? 0 : 8, marginBottom: compactGrid ? 8 : 0 }}>
+            <Card style={{ padding: 16, borderRadius: 10 }}>
+              <Text style={{ color: colors.accent, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' }}>Sécurité</Text>
+              <Text style={{ color: colors.text, fontWeight: '700', fontSize: 16, marginTop: 8 }}>Mon compte</Text>
             </Card>
           </TouchableOpacity>
           <TouchableOpacity
@@ -119,7 +136,7 @@ export const AdminDashboard: React.FC = ({ navigation }: any) => {
               try {
                 const csv = await api.exportSurveysCsv();
                 if (Platform.OS === 'web' && typeof window !== 'undefined') {
-                  const blob = new Blob([csv], { type: 'text/csv' });
+                  const blob = new Blob([csv || ''], { type: 'text/csv' });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement('a');
                   a.href = url;
@@ -133,15 +150,15 @@ export const AdminDashboard: React.FC = ({ navigation }: any) => {
             }}
             style={{ flex: 1 }}
           >
-            <Card style={{ padding: 14, alignItems: 'center' }}>
-              <Text style={{ fontSize: 24, marginBottom: 6 }}>📊</Text>
-              <Text style={{ color: colors.text, fontWeight: '600', fontSize: 12, textAlign: 'center' }}>Export</Text>
+            <Card style={{ padding: 16, borderRadius: 10 }}>
+              <Text style={{ color: colors.accent, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' }}>Données</Text>
+              <Text style={{ color: colors.text, fontWeight: '700', fontSize: 16, marginTop: 8 }}>Export CSV</Text>
             </Card>
           </TouchableOpacity>
         </View>
 
         {/* Create Admin Section */}
-        <Text style={{ color: colors.text, fontSize: 16, fontWeight: '600', marginBottom: 12 }}>👤 Nouvel admin</Text>
+        <Text style={{ color: colors.text, fontSize: 13, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 12 }}>Nouvel administrateur</Text>
         <Card style={{ padding: 14, marginBottom: 18 }}>
           <Input label="Nom" value={newAdminName} onChangeText={setNewAdminName} placeholder="Nom complet" />
           <Input label="Email" value={newAdminEmail} onChangeText={setNewAdminEmail} placeholder="admin@example.com" />
@@ -158,19 +175,19 @@ export const AdminDashboard: React.FC = ({ navigation }: any) => {
         </Card>
 
         {/* Recent Bookings */}
-        <Text style={{ color: colors.text, fontSize: 16, fontWeight: '600', marginBottom: 12 }}>📅 Réservations récentes</Text>
+        <Text style={{ color: colors.text, fontSize: 13, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 12 }}>Réservations récentes</Text>
         {latest.length > 0 ? (
           latest.map((item) => (
             <Card key={item.id} style={{ marginBottom: 12, padding: 14 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: colors.text, fontWeight: '700', fontSize: 14 }}>
-                    {item.type} • {item.package ?? 'Standard'}
+                    {item.type} / {item.package ?? 'Standard'}
                   </Text>
                   <Text style={{ color: colors.muted, marginTop: 6, fontSize: 12 }}>
-                    📅 {item.date} • 🕐 {item.time}
+                    {item.date} / {item.time}
                   </Text>
-                  <Text style={{ color: colors.muted, marginTop: 4, fontSize: 12 }}>📍 {item.location}</Text>
+                  <Text style={{ color: colors.muted, marginTop: 4, fontSize: 12 }}>{item.location}</Text>
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
                   <Text style={{ color: colors.text, fontWeight: '700', fontSize: 16 }}>€{item.price ?? 0}</Text>
@@ -201,10 +218,10 @@ export const AdminDashboard: React.FC = ({ navigation }: any) => {
                       }}
                     >
                       {item.status === 'confirmed'
-                        ? '✅ Confirmée'
+                        ? 'Confirmée'
                         : item.status === 'pending'
-                        ? '⏳ Attente'
-                        : '🎉 Terminée'}
+                        ? 'En attente'
+                        : 'Terminée'}
                     </Text>
                   </View>
                 </View>
@@ -214,6 +231,7 @@ export const AdminDashboard: React.FC = ({ navigation }: any) => {
         ) : (
           <Text style={{ color: colors.muted, textAlign: 'center', marginVertical: 20 }}>Aucune réservation récente</Text>
         )}
+        </View>
       </ScrollView>
     </View>
   );

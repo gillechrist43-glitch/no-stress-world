@@ -3,11 +3,13 @@ import { View, TextInput, TouchableOpacity, FlatList, Text, KeyboardAvoidingView
 import { messaging } from '../../services/api';
 import { ChatBubble } from '../../components/ui/ChatBubble';
 import { colors } from '../../theme';
+import { useAuthStore } from '../../store/useAuthStore';
 
 export const ConversationScreen: React.FC = ({ route, navigation }: any) => {
   const { conversationId } = route.params;
   const [messages, setMessages] = useState<any[]>([]);
   const [text, setText] = useState('');
+  const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
     (async () => {
@@ -18,7 +20,7 @@ export const ConversationScreen: React.FC = ({ route, navigation }: any) => {
 
   const send = async () => {
     if (!text.trim()) return;
-    const m = await messaging.sendMessage(conversationId, 'client', text.trim());
+    const m = await messaging.sendMessage(conversationId, user?.role === 'admin' ? 'admin' : 'client', text.trim());
     setMessages((s) => [...s, m]);
     setText('');
   };

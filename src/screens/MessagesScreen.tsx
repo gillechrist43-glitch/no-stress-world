@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { colors } from '../theme';
 import { messaging } from '../services/api';
+import { useAuthStore } from '../store/useAuthStore';
 
 export const MessagesScreen: React.FC = ({ navigation }: any) => {
   const [conversations, setConversations] = useState<any[]>([]);
+  const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
     (async () => {
@@ -17,9 +19,11 @@ export const MessagesScreen: React.FC = ({ navigation }: any) => {
     <View style={{ flex: 1, padding: 16, backgroundColor: colors.background }}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
         <Text style={{ color: colors.text, fontSize: 20, fontWeight: '700' }}>Messages</Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Conversation', { conversationId: `c${Date.now()}` })}>
-          <Text style={{ color: colors.accent }}>Nouveau</Text>
-        </TouchableOpacity>
+        {user?.role === 'client' ? (
+          <TouchableOpacity onPress={() => navigation.navigate('Conversation', { conversationId: `u${user.id.replace(/^u/, '')}:support` })}>
+            <Text style={{ color: colors.accent }}>Nouveau</Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
 
       <FlatList

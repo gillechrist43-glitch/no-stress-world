@@ -6,9 +6,7 @@ export type Notification = {
   createdAt: string;
 };
 
-let notifications: Notification[] = [
-  { id: 'n1', title: 'Réservation confirmée', body: 'Votre séance du 01/09 est confirmée.', read: false, createdAt: new Date().toISOString() }
-];
+const notifications: Notification[] = [];
 
 export const notificationsApi = {
   list: async () => {

@@ -2,11 +2,7 @@ import React from 'react';
 import { View, Text, FlatList } from 'react-native';
 import { colors } from '../theme';
 
-const notifications = [
-  { id: 'n1', title: 'Nouvelle disponibilité', body: 'Votre photographe est disponible mercredi à 14h.' },
-  { id: 'n2', title: 'Réservation confirmée', body: 'Votre séance Portrait a été confirmée.' },
-  { id: 'n3', title: 'Suggestion', body: 'Ajoutez un format livrable numérique pour votre prochaine séance.' }
-];
+const notifications: { id: string; title: string; body: string }[] = [];
 
 export const NotificationsScreen: React.FC = () => {
   return (

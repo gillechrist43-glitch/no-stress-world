@@ -1,13 +1,17 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const path = require('path');
-const fs = require('fs');
-const sqlite3 = require('sqlite3').verbose();
 const crypto = require('crypto');
+const multer = require('multer');
+const { db, isPostgres } = require('./database');
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
 const DEFAULT_ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@local';
 const DEFAULT_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+
+if (process.env.NODE_ENV === 'production' && (!process.env.DATABASE_URL || !process.env.JWT_SECRET)) {
+  throw new Error('DATABASE_URL and JWT_SECRET are required in production');
+}
 
 function base64url(input) {
   return Buffer.from(input).toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
@@ -31,24 +35,16 @@ function verifyToken(token) {
   }
 }
 
-const DB_PATH = process.env.NETLIFY ? '/tmp/no-stress-world.sqlite' : path.join(__dirname, 'db.sqlite');
 const app = express();
-app.use(cors());
+const allowedOrigins = (process.env.FRONTEND_URL || '*').split(',').map((origin) => origin.trim());
+app.use(cors({ origin: allowedOrigins.includes('*') ? true : allowedOrigins }));
 app.use(bodyParser.json());
 
-try {
-  fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
-} catch (e) {
-  console.warn('Could not ensure DB directory exists:', e && e.message ? e.message : e);
-}
-
-const db = new sqlite3.Database(DB_PATH);
-
-function init() {
-  db.serialize(() => {
-    db.run(
-      `CREATE TABLE IF NOT EXISTS bookings (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+function init(done) {
+  const id = isPostgres ? 'SERIAL PRIMARY KEY' : 'INTEGER PRIMARY KEY AUTOINCREMENT';
+  const schema = [
+    `CREATE TABLE IF NOT EXISTS bookings (
+        id ${id},
         type TEXT,
         date TEXT,
         time TEXT,
@@ -59,51 +55,99 @@ function init() {
         notes TEXT,
         options TEXT,
         package TEXT,
-        price REAL
-      )`
-    );
-
-    db.run(
-      `CREATE TABLE IF NOT EXISTS gallery (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        price REAL,
+        userId INTEGER,
+        userEmail TEXT
+      )`,
+    `CREATE TABLE IF NOT EXISTS gallery (
+        id ${id},
         title TEXT,
         category TEXT,
-        description TEXT
-      )`
-    );
-    db.run(
-      `CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        description TEXT,
+        imageUrl TEXT,
+        imageData TEXT,
+        imageMime TEXT
+      )`,
+    `CREATE TABLE IF NOT EXISTS users (
+        id ${id},
         name TEXT,
         email TEXT UNIQUE,
         password TEXT,
         role TEXT
-      )`
-    );
-
-    db.run(
-      `CREATE TABLE IF NOT EXISTS messages (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+      )`,
+    `CREATE TABLE IF NOT EXISTS messages (
+        id ${id},
         conversationId TEXT,
         senderRole TEXT,
         text TEXT,
         createdAt TEXT
-      )`
-    );
-    db.run(
-      `CREATE TABLE IF NOT EXISTS surveys (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+      )`,
+    `CREATE TABLE IF NOT EXISTS surveys (
+        id ${id},
         reference TEXT,
         timestamp TEXT,
         name TEXT,
         email TEXT,
         payload TEXT
-      )`
-    );
-  });
+      )`,
+  ];
+
+  const runNext = (index) => {
+    if (index === schema.length) return done();
+    db.run(schema[index], (error) => {
+      if (error) return done(error);
+      runNext(index + 1);
+    });
+  };
+
+  runNext(0);
 }
 
-init();
+function migrateSchema(done) {
+  const migrations = isPostgres
+    ? [
+        'ALTER TABLE bookings ADD COLUMN IF NOT EXISTS userId INTEGER',
+        'ALTER TABLE bookings ADD COLUMN IF NOT EXISTS userEmail TEXT',
+        'ALTER TABLE gallery ADD COLUMN IF NOT EXISTS imageUrl TEXT',
+        'ALTER TABLE gallery ADD COLUMN IF NOT EXISTS imageData TEXT',
+        'ALTER TABLE gallery ADD COLUMN IF NOT EXISTS imageMime TEXT',
+      ]
+    : [
+        'ALTER TABLE bookings ADD COLUMN userId INTEGER',
+        'ALTER TABLE bookings ADD COLUMN userEmail TEXT',
+        'ALTER TABLE gallery ADD COLUMN imageUrl TEXT',
+        'ALTER TABLE gallery ADD COLUMN imageData TEXT',
+        'ALTER TABLE gallery ADD COLUMN imageMime TEXT',
+      ];
+  const runNext = (index) => {
+    if (index === migrations.length) return done();
+    db.run(migrations[index], (error) => {
+      if (error && !/duplicate column name/i.test(error.message || '')) return done(error);
+      runNext(index + 1);
+    });
+  };
+  runNext(0);
+}
+
+let databaseReady = false;
+init((error) => {
+  if (error) {
+    console.error('Database initialization failed:', error.message);
+    return;
+  }
+  migrateSchema((migrationError) => {
+    if (migrationError) {
+      console.error('Database migration failed:', migrationError.message);
+      return;
+    }
+    databaseReady = true;
+    seedAdmin();
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.status(databaseReady ? 200 : 503).json({ ok: databaseReady, database: isPostgres ? 'postgres' : 'sqlite' });
+});
 
 // Seed initial admin if none exists
 function hashPassword(password) {
@@ -139,18 +183,18 @@ function seedAdmin() {
   });
 }
 
-seedAdmin();
-
 // Auth routes
 app.post('/auth/register', async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, password, role } = req.body;
+    const email = String(req.body.email || '').trim().toLowerCase();
     if (!email || !password) return res.status(400).json({ error: 'Missing email or password' });
+    if (password.length < 6) return res.status(400).json({ error: 'Password must contain at least 6 characters' });
     // Only allow client registrations from public
     if (role && role === 'admin') return res.status(403).json({ error: 'Admin registration is not allowed' });
     const hash = hashPassword(password);
     db.run('INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)', [name || '', email, hash, 'client'], function (err) {
-      if (err) return res.status(500).json({ error: err.message });
+      if (err) return res.status(/unique|constraint/i.test(err.message || '') ? 409 : 500).json({ error: /unique|constraint/i.test(err.message || '') ? 'Email is already in use' : err.message });
       const id = this.lastID;
       const user = { id: 'u' + id, name: name || '', email, role: 'client' };
         const token = signToken({ id: id, role: 'client', name: user.name, email, iat: Date.now() });
@@ -162,7 +206,8 @@ app.post('/auth/register', async (req, res) => {
 });
 
 app.post('/auth/login', (req, res) => {
-  const { email, password } = req.body;
+  const email = String(req.body.email || '').trim().toLowerCase();
+  const { password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Missing email or password' });
 
   const loginWithUser = (row) => {
@@ -193,6 +238,42 @@ app.post('/auth/login', (req, res) => {
   });
 });
 
+app.put('/auth/password', authenticate, (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword || newPassword.length < 6) return res.status(400).json({ error: 'Current password and a new password of at least 6 characters are required' });
+  db.get('SELECT password FROM users WHERE id = ?', [req.user.id], (error, row) => {
+    if (error) return res.status(500).json({ error: error.message });
+    if (!row || !verifyPassword(currentPassword, row.password)) return res.status(401).json({ error: 'Current password is incorrect' });
+    db.run('UPDATE users SET password = ? WHERE id = ?', [hashPassword(newPassword), req.user.id], (updateError) => {
+      if (updateError) return res.status(500).json({ error: updateError.message });
+      res.json({ ok: true });
+    });
+  });
+});
+
+app.delete('/auth/account', authenticate, (req, res) => {
+  const { password } = req.body;
+  if (!password) return res.status(400).json({ error: 'Password is required' });
+  db.get('SELECT password, role FROM users WHERE id = ?', [req.user.id], (error, row) => {
+    if (error) return res.status(500).json({ error: error.message });
+    if (!row || !verifyPassword(password, row.password)) return res.status(401).json({ error: 'Password is incorrect' });
+    const finish = () => db.run('DELETE FROM users WHERE id = ?', [req.user.id], (deleteError) => {
+      if (deleteError) return res.status(500).json({ error: deleteError.message });
+      res.json({ ok: true });
+    });
+    if (row.role === 'admin') {
+      return db.get('SELECT COUNT(*) AS count FROM users WHERE role = ?', ['admin'], (countError, countRow) => {
+        if (countError) return res.status(500).json({ error: countError.message });
+        if (Number(countRow.count) <= 1) return res.status(400).json({ error: 'The last administrator cannot delete this account' });
+        finish();
+      });
+    }
+    db.run('DELETE FROM bookings WHERE userId = ?', [req.user.id], () => {
+      db.run('DELETE FROM messages WHERE conversationId LIKE ?', [`u${req.user.id}:%`], () => finish());
+    });
+  });
+});
+
 // Middleware to authenticate
 function authenticate(req, res, next) {
   const h = req.headers.authorization;
@@ -211,12 +292,13 @@ function adminOnly(req, res, next) {
 
 // Admin-only endpoint to create admins
 app.post('/admin/create-admin', authenticate, adminOnly, async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, password } = req.body;
+  const email = String(req.body.email || '').trim().toLowerCase();
   if (!email || !password) return res.status(400).json({ error: 'Missing email or password' });
   // reuse existing hashPassword utility
   const hash = hashPassword(password);
   db.run('INSERT INTO users (name,email,password,role) VALUES (?,?,?,?)', [name || '', email, hash, 'admin'], function (err) {
-    if (err) return res.status(500).json({ error: err.message });
+    if (err) return res.status(/unique|constraint/i.test(err.message || '') ? 409 : 500).json({ error: /unique|constraint/i.test(err.message || '') ? 'Email is already in use' : err.message });
     const id = this.lastID;
     res.json({ id: 'u' + id, name: name || '', email, role: 'admin' });
   });
@@ -299,14 +381,34 @@ app.get('/admin/surveys/export', authenticate, adminOnly, (req, res) => {
 
 // Messages endpoints
 app.get('/conversations', authenticate, (req, res) => {
-  db.all('SELECT conversationId, MAX(createdAt) as lastAt FROM messages GROUP BY conversationId ORDER BY lastAt DESC', (err, rows) => {
+  const query = req.user.role === 'admin'
+    ? 'SELECT * FROM messages ORDER BY createdAt DESC'
+    : 'SELECT * FROM messages WHERE conversationId LIKE ? ORDER BY createdAt DESC';
+  const params = req.user.role === 'admin' ? [] : [`u${req.user.id}:%`];
+  db.all(query, params, (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
-    res.json(rows.map((r) => ({ id: r.conversationId })));
+    const conversations = new Map();
+    rows.forEach((row) => {
+      if (!conversations.has(row.conversationId)) {
+        conversations.set(row.conversationId, {
+          id: row.conversationId,
+          last: {
+            id: 'm' + row.id,
+            from: row.senderRole === 'admin' ? 'admin' : 'client',
+            text: row.text,
+            createdAt: row.createdAt,
+            conversationId: row.conversationId,
+          },
+        });
+      }
+    });
+    res.json(Array.from(conversations.values()));
   });
 });
 
 app.get('/conversations/:id/messages', authenticate, (req, res) => {
   const conv = req.params.id;
+  if (req.user.role !== 'admin' && !conv.startsWith(`u${req.user.id}:`)) return res.status(403).json({ error: 'Conversation access denied' });
   db.all('SELECT * FROM messages WHERE conversationId = ? ORDER BY id ASC', [conv], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     const mapped = rows.map((r) => ({ id: 'm' + r.id, from: r.senderRole === 'admin' ? 'admin' : 'client', text: r.text, createdAt: r.createdAt, conversationId: r.conversationId }));
@@ -317,6 +419,8 @@ app.get('/conversations/:id/messages', authenticate, (req, res) => {
 app.post('/conversations/:id/messages', authenticate, (req, res) => {
   const conv = req.params.id;
   const { text } = req.body;
+  if (!text || !text.trim()) return res.status(400).json({ error: 'Message text is required' });
+  if (req.user.role !== 'admin' && !conv.startsWith(`u${req.user.id}:`)) return res.status(403).json({ error: 'Conversation access denied' });
   const senderRole = req.user.role;
   const createdAt = new Date().toISOString();
   const stmt = db.prepare('INSERT INTO messages (conversationId,senderRole,text,createdAt) VALUES (?,?,?,?)');
@@ -327,8 +431,10 @@ app.post('/conversations/:id/messages', authenticate, (req, res) => {
   });
 });
 
-app.get('/bookings', (req, res) => {
-  db.all('SELECT * FROM bookings ORDER BY id DESC', (err, rows) => {
+app.get('/bookings', authenticate, (req, res) => {
+  const query = req.user.role === 'admin' ? 'SELECT * FROM bookings ORDER BY id DESC' : 'SELECT * FROM bookings WHERE userId = ? ORDER BY id DESC';
+  const params = req.user.role === 'admin' ? [] : [req.user.id];
+  db.all(query, params, (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     // map id to string keys like b1, b2
     const mapped = rows.map((r) => ({ ...r, id: 'b' + r.id, options: r.options ? JSON.parse(r.options) : [] }));
@@ -336,12 +442,12 @@ app.get('/bookings', (req, res) => {
   });
 });
 
-app.post('/bookings', (req, res) => {
+app.post('/bookings', authenticate, (req, res) => {
   const b = req.body;
   const options = JSON.stringify(b.options || []);
-  const stmt = db.prepare(`INSERT INTO bookings (type,date,time,location,status,people,sessionLength,notes,options,package,price) VALUES (?,?,?,?,?,?,?,?,?,?,?)`);
+  const stmt = db.prepare(`INSERT INTO bookings (type,date,time,location,status,people,sessionLength,notes,options,package,price,userId,userEmail) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`);
   const status = b.status || 'pending';
-  stmt.run(b.type || '', b.date || '', b.time || '', b.location || '', status, b.people || 1, b.sessionLength || '', b.notes || '', options, b.package || 'Standard', b.price || 0, function (err) {
+  stmt.run(b.type || '', b.date || '', b.time || '', b.location || '', status, b.people || 1, b.sessionLength || '', b.notes || '', options, b.package || 'Standard', b.price || 0, req.user.id, req.user.email || '', function (err) {
     if (err) return res.status(500).json({ error: err.message });
     const id = this.lastID;
     db.get('SELECT * FROM bookings WHERE id = ?', [id], (e, row) => {
@@ -351,7 +457,7 @@ app.post('/bookings', (req, res) => {
   });
 });
 
-app.put('/bookings/:id/status', (req, res) => {
+app.put('/bookings/:id/status', authenticate, adminOnly, (req, res) => {
   const idParam = req.params.id.replace(/^b/, '');
   const { status } = req.body;
   db.run('UPDATE bookings SET status = ? WHERE id = ?', [status, idParam], function (err) {
@@ -363,28 +469,38 @@ app.put('/bookings/:id/status', (req, res) => {
   });
 });
 
-app.get('/gallery', (req, res) => {
+function mapGalleryRow(row) {
+  return {
+    ...row,
+    id: 'g' + row.id,
+    imageUrl: row.imageData ? `data:${row.imageMime || 'image/jpeg'};base64,${row.imageData}` : row.imageUrl || '',
+  };
+}
+
+app.get('/gallery', authenticate, (req, res) => {
   db.all('SELECT * FROM gallery ORDER BY id DESC', (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
-    const mapped = rows.map((r) => ({ ...r, id: 'g' + r.id }));
+    const mapped = rows.map(mapGalleryRow);
     res.json(mapped);
   });
 });
 
-app.post('/gallery', (req, res) => {
+app.post('/gallery', authenticate, adminOnly, upload.single('image'), (req, res) => {
   const { title, category, description } = req.body;
-  const stmt = db.prepare('INSERT INTO gallery (title, category, description) VALUES (?,?,?)');
-  stmt.run(title || '', category || '', description || '', function (err) {
+  if (!title || !category || !req.file) return res.status(400).json({ error: 'Title, category and an image file are required' });
+  const imageData = req.file.buffer.toString('base64');
+  const stmt = db.prepare('INSERT INTO gallery (title, category, description, imageData, imageMime) VALUES (?,?,?,?,?)');
+  stmt.run(title, category, description || '', imageData, req.file.mimetype, function (err) {
     if (err) return res.status(500).json({ error: err.message });
     const id = this.lastID;
     db.get('SELECT * FROM gallery WHERE id = ?', [id], (e, row) => {
       if (e) return res.status(500).json({ error: e.message });
-      res.json({ ...row, id: 'g' + row.id });
+      res.json(mapGalleryRow(row));
     });
   });
 });
 
-app.delete('/gallery/:id', (req, res) => {
+app.delete('/gallery/:id', authenticate, adminOnly, (req, res) => {
   const idParam = req.params.id.replace(/^g/, '');
   db.run('DELETE FROM gallery WHERE id = ?', [idParam], function (err) {
     if (err) return res.status(500).json({ error: err.message });
@@ -392,8 +508,10 @@ app.delete('/gallery/:id', (req, res) => {
   });
 });
 
-app.get('/dashboard', (req, res) => {
-  db.all('SELECT * FROM bookings', (err, rows) => {
+app.get('/dashboard', authenticate, (req, res) => {
+  const query = req.user.role === 'admin' ? 'SELECT * FROM bookings' : 'SELECT * FROM bookings WHERE userId = ?';
+  const params = req.user.role === 'admin' ? [] : [req.user.id];
+  db.all(query, params, (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     const total = rows.length;
     const pending = rows.filter((r) => r.status === 'pending').length;

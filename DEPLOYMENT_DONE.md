@@ -1,131 +1,56 @@
-# 🚀 Déploiement EN LIGNE Complété
+# Mise en production
 
-## ✅ Étape 1: Frontend (GitHub Pages) - FAIT ✓
+Architecture retenue :
 
-- Repo créé: https://github.com/gillechrist43-glitch/no-stress-world
-- GitHub Actions configure le déploiement automatique
-- L'app Expo web sera servie via GitHub Pages
-
-**Pour activer GitHub Pages:**
-1. Allez sur: https://github.com/gillechrist43-glitch/no-stress-world/settings/pages
-2. Sélectionnez **Source**: `Deploy from a branch`
-3. Sélectionnez **Branch**: `gh-pages` (créée automatiquement par GitHub Actions)
-4. **Save**
-
-**URL Frontend:** `https://gillechrist43-glitch.github.io/no-stress-world/`
-
----
-
-## ⚠️ Étape 2: Backend (Node.js + SQLite) - REQUIS
-
-GitHub Pages ne peut pas héberger Node.js. Utilisez **Railway** (gratuit):
-
-### A. Créer le Backend sur Railway
-
-1. Allez sur: https://railway.app
-2. Cliquez **"New Project"** → **"Deploy from GitHub Repo"**
-3. Sélectionnez: `gillechrist43-glitch/no-stress-world`
-4. Railway crée automatiquement un service Node.js
-5. Ajouter les **Environment Variables** (Railway → Variables):
-   ```
-   EMAILJS_USER=JsbOdljB-zSYfbcGs
-   EMAILJS_SERVICE=service_dji4avl
-   EMAILJS_TEMPLATE=template_kxv3da
-   SURVEY_TO=your_email@gmail.com
-   JWT_SECRET=random_secret_key_12345
-   PORT=3000
-   ```
-6. Clicker **Deploy**
-
-**URL Backend:** `https://your-project-railway.app`
-
-### B. Configurer le Frontend pour le Backend
-
-1. Allez sur: https://github.com/gillechrist43-glitch/no-stress-world/settings/secrets
-2. Ajouter un **Secret:**
-   - Name: `REACT_APP_REMOTE_API_URL`
-   - Value: `https://your-project-railway.app`
-
-3. Modifiez le workflow:
-   - `.github/workflows/deploy.yml`
-   - Changez ligne `REACT_APP_REMOTE_API_URL:` de `http://localhost:4004` → `${{ secrets.REACT_APP_REMOTE_API_URL }}`
-
----
-
-## 📋 Accès aux URLs
-
-Après configuration:
-
-### Frontend (GitHub Pages)
-```
-https://gillechrist43-glitch.github.io/no-stress-world/
+```text
+GitHub Pages -> Render (Express) -> Neon (PostgreSQL)
 ```
 
-### Backend (Railway)
-```
-https://your-project-railway.app/auth/login
-```
+## 1. Neon
 
----
+Créer une base PostgreSQL et copier son URL `DATABASE_URL` avec `sslmode=require`.
 
-## 🧪 Test en Ligne
+## 2. Render
 
-1. Ouvrez: `https://gillechrist43-glitch.github.io/no-stress-world/`
-2. Login: `admin@local` / `admin123`
-3. Vérifier:
-   - ✅ Dashboard admin s'affiche
-   - ✅ Bouton "Déconnecter" visible
-   - ✅ Survey form fonctionne
-   - ✅ Email reçu après submission
+Créer un Web Service depuis le dépôt GitHub, ou utiliser [render.yaml](render.yaml) :
 
----
-
-## 🔧 Déploiement Continu
-
-Chaque fois que vous poussez du code:
-```bash
-git add .
-git commit -m "Update: description"
-git push origin main
+```text
+Root Directory: server
+Build Command: npm install
+Start Command: npm start
+Health Check: /health
 ```
 
-**GitHub Actions va automatiquement:**
-1. ✅ Installer dépendances
-2. ✅ Builder l'app Expo web
-3. ✅ Déployer sur GitHub Pages
+Variables obligatoires :
 
-**Railway va automatiquement:**
-1. ✅ Redéployer le backend
-2. ✅ Faire tourner les migrations DB
+```text
+DATABASE_URL=<URL Neon>
+JWT_SECRET=<secret long et aléatoire>
+FRONTEND_URL=https://<utilisateur>.github.io/<depot>
+ADMIN_EMAIL=<email admin>
+ADMIN_PASSWORD=<mot de passe admin>
+NODE_ENV=production
+```
 
----
+Ajouter aussi `EMAILJS_USER`, `EMAILJS_SERVICE`, `EMAILJS_TEMPLATE` et `SURVEY_TO` pour les demandes de séance.
 
-## 📞 Troubleshooting
+Vérifier que `GET https://<api-render>/health` renvoie `ok: true` et `database: postgres`.
 
-### "Frontend affiche erreur de connexion"
-→ Vérifier l'URL du backend dans `.github/workflows/deploy.yml`
+## 3. GitHub Pages
 
-### "404 sur GitHub Pages"
-→ Vérifier que GitHub Pages est activé dans Settings → Pages
+Dans les secrets du dépôt, ajouter :
 
-### "Email non reçu"
-→ Vérifier les variables EmailJS sur Railway
+```text
+REACT_APP_REMOTE_API_URL=https://<api-render>
+```
 
-### "SQLite error"
-→ Railway maintient la DB automatiquement - pas d'action nécessaire
+Pousser sur `main`. Le workflow [.github/workflows/deploy.yml](.github/workflows/deploy.yml) construit `web-build` et publie la branche `gh-pages`. Dans les réglages Pages, sélectionner `gh-pages` comme source.
 
----
+## 4. Vérification finale
 
-## ✨ RÉSUMÉ FINAL
+1. Ouvrir l’URL GitHub Pages.
+2. Créer un compte client et effectuer une réservation.
+3. Se connecter avec le compte administrateur.
+4. Vérifier le dashboard, la galerie, la messagerie et l’envoi d’une demande.
 
-| Component | Plateforme | URL |
-|-----------|-----------|-----|
-| **Frontend** | GitHub Pages | https://gillechrist43-glitch.github.io/no-stress-world/ |
-| **Backend** | Railway | https://your-project.railway.app |
-| **Code** | GitHub | https://github.com/gillechrist43-glitch/no-stress-world |
-
-**Accès public:** ✅ OUI - URL partageable!
-**Auto-déploiement:** ✅ OUI - Push = Deploy
-**Stockage DB:** ✅ OUI - SQLite sur Railway
-
-🎉 **Plateforme EN LIGNE et PRÊTE!**
+SQLite reste disponible uniquement pour le développement local. En production, `DATABASE_URL` est obligatoire et l’API refuse les secrets de développement.

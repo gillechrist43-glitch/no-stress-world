@@ -6,10 +6,7 @@ export type Message = {
   conversationId: string;
 };
 
-let messages: Message[] = [
-  { id: 'm1', from: 'client', text: 'Bonjour, je souhaite réserver une séance.', createdAt: new Date().toISOString(), conversationId: 'c1' },
-  { id: 'm2', from: 'admin', text: 'Bonjour ! Nous avons des disponibilités la semaine prochaine.', createdAt: new Date().toISOString(), conversationId: 'c1' }
-];
+const messages: Message[] = [];
 
 export const messagesApi = {
   listConversations: async () => {

@@ -29,8 +29,13 @@ jobs:
       - name: Build Expo web
         env:
           REACT_APP_REMOTE_API: 'true'
-          REACT_APP_REMOTE_API_URL: ${{ secrets.REACT_APP_REMOTE_API_URL != '' && secrets.REACT_APP_REMOTE_API_URL || 'https://your-backend-url.railway.app' }}
-        run: npx expo export:web
+          REACT_APP_REMOTE_API_URL: ${{ secrets.REACT_APP_REMOTE_API_URL }}
+        run: |
+          if [ -z "$REACT_APP_REMOTE_API_URL" ]; then
+            echo "Missing GitHub secret: REACT_APP_REMOTE_API_URL"
+            exit 1
+          fi
+          npx expo export:web
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3

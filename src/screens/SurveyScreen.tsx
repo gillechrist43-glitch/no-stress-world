@@ -107,7 +107,7 @@ export const SurveyScreen: React.FC = ({ navigation }: any) => {
           </View>
         ) : (
           <View style={{ marginTop: 12, padding: 18, borderRadius: 12, backgroundColor: '#e6fffb', alignItems: 'center' }}>
-            <Text style={{ fontSize: 18, fontWeight: '700', color: '#056162' }}>🎉 Demande envoyée !</Text>
+            <Text style={{ fontSize: 18, fontWeight: '700', color: '#056162' }}>Demande envoyée</Text>
             <Text style={{ color: '#056162', marginTop: 8 }}>Référence : {submittedRef}</Text>
             <Text style={{ color: '#056162', marginTop: 6, fontSize: 12 }}>{emailStatus}</Text>
             <Text style={{ color: '#056162', marginTop: 6, fontSize: 12 }}>Nous vous contacterons bientôt.</Text>

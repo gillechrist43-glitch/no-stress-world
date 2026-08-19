@@ -1,6 +1,6 @@
 # NO STRESS WORLD 📸 - Photography Platform
 
-Une plateforme web moderne pour la gestion des séances photo et réservations avec backend Express + SQLite.
+Une plateforme web moderne pour la gestion des séances photo et réservations avec frontend statique React/Expo Web, API Express et PostgreSQL distant.
 
 ## 🚀 Caractéristiques
 
@@ -16,7 +16,8 @@ Une plateforme web moderne pour la gestion des séances photo et réservations a
 | Domaine | Technology |
 |---------|------------|
 | **Frontend** | Expo (React Native Web) + TypeScript |
-| **Backend** | Node.js + Express + SQLite |
+| **Backend** | Node.js + Express (Render) |
+| **Base de données** | PostgreSQL (Neon) avec fallback SQLite local |
 | **Auth** | HMAC-SHA256 tokens + PBKDF2 hashing |
 | **Email** | EmailJS REST API |
 | **State** | Zustand |
@@ -89,7 +90,29 @@ JWT_SECRET=your_secret_key
 
 ## 🌐 Déploiement en Ligne
 
-### Option 1: Vercel (Recommandé - Gratuit)
+### Architecture recommandée : GitHub Pages + Render + Neon
+
+Le frontend est compilé en fichiers statiques et publié sur GitHub Pages. Render exécute `server/index.js` comme service Node.js, tandis que Neon fournit la base PostgreSQL persistante.
+
+#### Backend Render
+
+Créer un Web Service Render avec le dépôt GitHub et ces paramètres :
+
+```text
+Root Directory: server
+Build Command: npm install
+Start Command: npm start
+```
+
+Variables Render : `DATABASE_URL` (URL Neon avec `sslmode=require`), `JWT_SECRET`, `FRONTEND_URL` (URL GitHub Pages), `ADMIN_EMAIL`, `ADMIN_PASSWORD`, et les variables EmailJS.
+
+Le endpoint `GET /health` doit répondre `{ "ok": true, "database": "postgres" }`.
+
+#### Frontend GitHub Pages
+
+Ajouter le secret GitHub `REACT_APP_REMOTE_API_URL` avec l’URL publique Render, sans suffixe `/api`, puis pousser sur `main`. Le workflow `.github/workflows/deploy.yml` construit et publie `web-build`.
+
+### Alternative historique : Vercel
 
 1. **Push le code sur GitHub:**
    ```bash

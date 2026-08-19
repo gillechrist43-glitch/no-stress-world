@@ -77,6 +77,8 @@ export default function AppNavigation() {
             <Stack.Screen name="Admin" component={AdminDashboard} options={{ title: 'Dashboard' }} />
             <Stack.Screen name="AdminOrders" component={OrdersScreen} options={{ title: 'Réservations' }} />
             <Stack.Screen name="GalleryManagement" component={GalleryManagement} options={{ title: 'Galerie' }} />
+            <Stack.Screen name="AdminMessages" component={MessagesScreen} options={{ title: 'Messages clients' }} />
+            <Stack.Screen name="AdminProfile" component={ProfileScreen} options={{ title: 'Mon compte' }} />
             <Stack.Screen name="Conversation" component={ConversationScreen} options={{ title: 'Conversation' }} />
           </>
         ) : null}

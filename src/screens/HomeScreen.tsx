@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, View, Text, TouchableOpacity, FlatList } from 'react-native';
+import { SafeAreaView, View, Text, TouchableOpacity, FlatList, Image } from 'react-native';
 import { colors, spacing, radii } from '../theme';
 import { Card } from '../components/ui/Card';
 import { api, GalleryItem } from '../services/api';
@@ -7,7 +7,7 @@ import { api, GalleryItem } from '../services/api';
 const defaultStats = [
   { id: 's1', title: 'Réservations', value: '0' },
   { id: 's2', title: 'Confirmées', value: '0' },
-  { id: 's3', title: 'Messages', value: '3' },
+  { id: 's3', title: 'Demandes', value: '0' },
 ];
 
 export const HomeScreen: React.FC = ({ navigation }: any) => {
@@ -66,6 +66,7 @@ export const HomeScreen: React.FC = ({ navigation }: any) => {
             showsHorizontalScrollIndicator={false}
             renderItem={({ item }) => (
               <Card style={{ width: 220, marginRight: 12, backgroundColor: '#161616' }}>
+                <Image source={{ uri: item.imageUrl }} style={{ width: '100%', height: 120, borderRadius: 8, marginBottom: 12, backgroundColor: colors.border }} resizeMode="cover" />
                 <Text style={{ color: colors.text, fontWeight: '700', marginBottom: 8 }}>{item.title}</Text>
                 <Text style={{ color: colors.muted, marginBottom: 10 }}>{item.category}</Text>
                 <Text style={{ color: colors.text, fontSize: 14 }}>{item.description}</Text>
