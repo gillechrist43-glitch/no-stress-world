@@ -15,9 +15,7 @@
     },
     "assetBundlePatterns": ["**/*"],
     "web": {
-      "build": {
-        "basePath": "/no-stress-world/"
-      }
+      "build": {}
     }
   }
 }
