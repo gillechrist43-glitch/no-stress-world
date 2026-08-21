@@ -39,6 +39,10 @@ function createPostgresDatabase() {
       callback();
     },
     run(sql, params = [], callback = () => {}) {
+      if (typeof params === 'function') {
+        callback = params;
+        params = [];
+      }
       const insert = /^\s*INSERT\s+INTO/i.test(sql) && !/\bRETURNING\b/i.test(sql);
       query(insert ? `${sql} RETURNING id` : sql, params, (error, result) => {
         const context = { lastID: result && result.rows[0] ? result.rows[0].id : undefined };
